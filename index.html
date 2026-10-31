@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10111b">
+  <title>حياتي | Life RPG</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+body {
+  margin: 0;
+  background: #10111b;
+  color: #f4f4fa;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+header {
+  padding: 28px 20px;
+  background: #191b2b;
+  border-bottom: 1px solid #303249;
+}
+header h1 {
+  margin: 0 0 8px;
+  font-size: 27px;
+}
+header p {
+  margin: 0;
+  color: #b6b9d1;
+}
+main {
+  max-width: 850px;
+  margin: auto;
+  padding: 20px;
+}
+.profile, .section-card {
+  padding: 20px;
+  margin-bottom: 16px;
+  background: #191b2b;
+  border: 1px solid #303249;
+  border-radius: 16px;
+}
+.level {
+  color: #b6a0ff;
+  font-size: 18px;
+  font-weight: bold;
+}
+.xp-bar {
+  height: 10px;
+  margin-top: 12px;
+  overflow: hidden;
+  background: #303249;
+  border-radius: 20px;
+}
+.xp-fill {
+  width: 0%;
+  height: 100%;
+  background: #a78bfa;
+  transition: width 0.3s;
+}
+button {
+  padding: 12px 16px;
+  color: white;
+  background: #6652c9;
+  border: 0;
+  border-radius: 10px;
+  font-size: 15px;
+  cursor: pointer;
+}
+button.secondary {
+  background: #303249;
+}
+input {
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0 12px;
+  color: white;
+  background: #10111b;
+  border: 1px solid #41435d;
+  border-radius: 10px;
+  font-size: 16px;
+}
+.section-card h3 {
+  margin-top: 0;
+}
+.muted {
+  color: #b6b9d1;
+  line-height: 1.7;
+}
+.section-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid #303249;
+}
+.section-item:last-child {
+  border-bottom: 0;
+}
+footer {
+  padding: 20px;
+  text-align: center;
+  color: #9295ad;
+}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🎮 حياتي | Life RPG</h1>
+    <p>حياتك، نظامك، وقواعدك أنت.</p>
+  </header>
+  <main>
+    <section class="profile">
+      <h2>👤 شخصيتي</h2>
+      <p>المستوى الحالي</p>
+      <div class="level" id="level">المستوى 1</div>
+      <p id="xpText">0 XP</p>
+      <div class="xp-bar">
+        <div class="xp-fill" id="xpFill"></div>
+      </div>
+      <br>
+      <button id="xpButton">+10 نقاط خبرة تجريبية</button>
+      <p class="muted">هذا نظام تجريبي أولي، وسنصمم قواعده لاحقاً.</p>
+    </section>
+<section class="section-card">
+  <h2>🗂️ أقسامي</h2>
+  <p class="muted">أنشئ أقساماً لحياتك وغيّر أسماءها كما تريد.</p>
+  <label for="sectionName">اسم القسم الجديد</label>
+  <input id="sectionName" placeholder="مثلاً: طلب العلم">
+  <button id="addSection">+ إضافة قسم</button>
+  <div id="sectionList"></div>
+</section>
+<section class="section-card">
+  <h2>🛠️ مركز التطوير</h2>
+  <p class="muted">
+    هذه النسخة هي نقطة البداية. سنضيف بالتدريج
+    المهام والمهارات والإنجازات والقواعد القابلة للتخصيص.
+  </p>
+</section>
+  </main>
+  <footer>نسختك الأولى — Life RPG</footer>
+  <script>
+    const STORAGE_KEY = "life-rpg-first-version";
+    let state = {
+      xp: 0,
+      sections: []
+    };
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (
+          parsed &&
+          typeof parsed.xp === "number" &&
+          Array.isArray(parsed.sections)
+        ) {
+          state = parsed;
+        }
+      }
+    } catch (error) {
+      console.error("تعذر تحميل البيانات المحفوظة", error);
+    }
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (error) {
+        alert("تعذر حفظ البيانات على هذا المتصفح.");
+      }
+    }
+    function render() {
+      const level = Math.floor(state.xp / 100) + 1;
+      const currentXP = state.xp % 100;
+      document.getElementById("level").textContent =
+        "المستوى " + level;
+      document.getElementById("xpText").textContent =
+        state.xp + " XP — " + currentXP + "/100 للمستوى التالي";
+      document.getElementById("xpFill").style.width =
+        currentXP + "%";
+      const list = document.getElementById("sectionList");
+      list.replaceChildren();
+      state.sections.forEach((section, index) => {
+        const row = document.createElement("div");
+        row.className = "section-item";
+        const name = document.createElement("span");
+        name.textContent = "📁 " + section;
+        const remove = document.createElement("button");
+        remove.className = "secondary";
+        remove.textContent = "حذف";
+        remove.addEventListener("click", () => {
+          state.sections.splice(index, 1);
+          saveState();
+          render();
+        });
+        row.append(name, remove);
+        list.appendChild(row);
+      });
+    }
+    document.getElementById("xpButton").addEventListener("click", () => {
+      state.xp += 10;
+      saveState();
+      render();
+    });
+    document.getElementById("addSection").addEventListener("click", () => {
+      const input = document.getElementById("sectionName");
+      const name = input.value.trim();
+      if (!name) {
+        alert("اكتب اسم القسم أولاً.");
+        return;
+      }
+      state.sections.push(name);
+      input.value = "";
+      saveState();
+      render();
+    });
+    render();
+  </script>
+</body>
+</html>
